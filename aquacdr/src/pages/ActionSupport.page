@@ -1,0 +1,22 @@
+<apex:page controller="ActionSupport">
+    <apex:form >
+        <apex:outputpanel id="counter">
+            <apex:outputText value="Click Me!: {!count}"/>
+            <apex:actionSupport event="onclick" 
+                                action="{!incrementCounter}" 
+                                rerender="counter, test" status="counterStatus"/>
+        </apex:outputpanel>
+        
+          <apex:actionStatus id="counterStatus" 
+                           startText=" (incrementing...)" 
+                           stopText=" (done)"/>
+        
+        <apex:outputPanel id="test" rendered="{!RenderPanel}"> 
+        
+           <apex:outputPanel id="second" rendered="{!RenderPanel}">
+               Hide me please
+           </apex:outputPanel>
+        </apex:outputPanel>
+      
+    </apex:form>
+</apex:page>
