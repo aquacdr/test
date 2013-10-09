@@ -1,5 +1,5 @@
 public with sharing class ManageProfileController {
-    
+    /*robots*/
     public List<User> selectedUsers{get;set;}
     public List<UserWrapper> userWrapperList{get;set;}
     public List<UserWrapper> resultUserList{get;set;}
