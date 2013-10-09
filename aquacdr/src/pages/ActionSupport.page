@@ -1,5 +1,5 @@
 <apex:page controller="ActionSupport">
-    <apex:form >
+    <apex:form ><!-- x -->
         <apex:outputpanel id="counter">
             <apex:outputText value="Click Me!: {!count}"/>
             <apex:actionSupport event="onclick" 

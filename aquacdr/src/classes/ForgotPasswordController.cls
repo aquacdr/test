@@ -10,7 +10,7 @@ public with sharing class ForgotPasswordController {
   		boolean success = Site.forgotPassword(username);
   		PageReference pr = Page.ForgotPasswordConfirm;
   		pr.setRedirect(true);
-  		
+  		//dmeyer
   		if (success) {  			
   			return pr;
   		}
