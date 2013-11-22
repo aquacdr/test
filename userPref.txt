@@ -6,11 +6,6 @@ purpose: to modify User profile
     <apex:form id="theForm">
     <apex:composition template="YOUPageTemplateNoActions">
         <apex:define name="content">
-    <apex:includeScript value="{!URLFOR($Resource.Tooltip,'js/jquery-1.9.0.min.js')}"/>
-    <apex:includeScript value="{!URLFOR($Resource.Tooltip,'js/jquery-migrate-1.0.0.js')}"/>          
-    <apex:includeScript value="{!URLFOR($Resource.Tooltip,'js/jquery.tooltipster.js')}"/>
-    <apex:stylesheet value="{!URLFOR($Resource.Tooltip,'css/reset.css')}"/>      
-    <apex:stylesheet value="{!URLFOR($Resource.Tooltip,'css/tooltipster.css')}"/>     
     <style type="text/css">
     .info_msgs_almp{
         background-image:url({!URLFOR($Resource.ALMPlus_Asset,'images/success_img.png')});
