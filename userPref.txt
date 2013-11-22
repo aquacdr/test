@@ -1,0 +1,574 @@
+<!-- 
+Created by Snehashis on 30 March 2012
+purpose: to modify User profile
+ -->
+<apex:page showHeader="false" sidebar="false" standardStyleSheets="false" controller="UpdateUserPrefController" action="{!init}" cache="false">
+    <apex:form id="theForm">
+    <apex:composition template="YOUPageTemplateNoActions">
+        <apex:define name="content">
+    <apex:includeScript value="{!URLFOR($Resource.Tooltip,'js/jquery-1.9.0.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Tooltip,'js/jquery-migrate-1.0.0.js')}"/>          
+    <apex:includeScript value="{!URLFOR($Resource.Tooltip,'js/jquery.tooltipster.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.Tooltip,'css/reset.css')}"/>      
+    <apex:stylesheet value="{!URLFOR($Resource.Tooltip,'css/tooltipster.css')}"/>     
+    <style type="text/css">
+    .info_msgs_almp{
+        background-image:url({!URLFOR($Resource.ALMPlus_Asset,'images/success_img.png')});
+        background-repeat:no-repeat;
+        background-position:top left;
+        padding: 3px 0px 10px 20px;
+        font-family:arial;
+        font-size:12px;
+        font-weight:normal;
+        display:block;
+        white-space:normal;
+        text-align:left;
+    }
+    .info_msgs_almp_err{
+        background-image:url({!URLFOR($Resource.ALMPlus_Asset,'images/error_img.png')});
+        background-repeat:no-repeat;
+        background-position:top left;
+        padding: 3px 0px 10px 20px;
+        font-family:arial;
+        font-size:12px;
+        font-weight:normal;
+        display:block;
+        white-space:normal;
+        text-align:left;
+    }
+    
+    .my-custom-theme {       
+    background: red;
+    color: white;
+    }
+
+    .my-custom-theme .tooltipster-content {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight:bold;
+    line-height: 16px;
+    padding: 8px 15px 8px 10px;
+    //border:10px;
+    }
+</style>
+ <script type="text/javascript">
+    ALM_PAGE_NAME="{!OmniturePageName}";
+    var isMlPln = '{!isMainPlan}';
+    //alert(' isMlPln -- '+isMlPln);
+    jQuery(document).ready(function() 
+    { 
+        if(isMlPln == 'true'){
+                jQuery("#mailPlanActionAlrt").show();
+        }else{
+            jQuery("#mailPlanActionAlrt").hide();
+        }
+    });
+        
+    var fixStyling = function (){
+        //Styling for Select box
+        if (!jQuery.browser.opera){
+            // select element styling
+            jQuery(".myselect").each(function(){
+                var title = jQuery(this).attr('title');
+                if(jQuery('option:selected', this).val() != '') 
+                    title = jQuery('option:selected',this).text();
+                jQuery(this).css({'z-index':10,'opacity':0,'-khtml-appearance':'none'})
+                    .after('<div class="select_cust profselec" style="height:24px">' +title + '</div>')
+                    .change(function(){
+                        val = jQuery('option:selected',this).text();
+                        jQuery(this).next().text(val);
+                        })
+            });
+        };
+        /** Avon Leader Tab Setting **/
+        if('{!userProfile}'=='Avon Leader')
+            showHideTabs(jQuery("#tab_settings"),'pref_lang','{!aAlertEnabled}');
+         /** Non Leader Tab Setting **/ 
+        if('{!userProfile}'!='Avon Leader'|| !{!market.Action_Alert_Enabled__c}){
+            showHideTabs(jQuery("#tab_settings"),'pref_lang','{!aAlertEnabled}');
+         }else if(jQuery(".alert_cbox").attr('checked')){
+              jQuery("#action_alert_detail").css('display','block');
+              jQuery("#alert_info_msg").css('display','block');
+         }
+         jQuery(".opt_style").click(showActionAlertDetails);
+         jQuery(".tabs_btm_shdw").children().click(function(){
+            jQuery("#almp_prf_info").css('display','none');
+         });
+         if(eval('{!market.Action_Alert_Enabled__c}') && eval('{!userProfile=='Avon Leader'}')){
+             if(eval('{!smsAdrs}'=='{!$Label.Second_Email}') && eval('{!userRec.Action_Alert_Enabled__c}')){
+                document.getElementById('{!$Component.theForm.iputtxt}').value='{!$Label.Second_Email}';
+                jQuery("#scnd_chk").attr("class","prof_sel_false sel_style");
+             }else{
+                jQuery("#scnd_email").children().css('color','#000');
+                if(jQuery(".email_cbox").attr('checked')){
+                    jQuery("#scnd_chk").attr("class","prof_sel_true sel_style");
+                }else{
+                    jQuery("#scnd_chk").attr("class","prof_sel_false sel_style");
+                }
+             
+             }
+         }
+         jQuery("#scnd_email").children().bind({
+            click:function(){
+                if(jQuery("#scnd_email").children().val()=='{!$Label.Second_Email}')
+                    jQuery("#scnd_email").children().val('');
+                    jQuery("#scnd_email").children().css('color','#000');
+            },
+            blur:function(){
+                if(jQuery("#scnd_email").children().val()==''){
+                    jQuery("#scnd_email").children().val("{!$Label.Second_Email}");
+                    jQuery("#scnd_email").children().css('color','#CCC');
+            }else{
+                jQuery("#scnd_email").children().val(jQuery("#scnd_email").children().val());
+            }
+          
+         }});
+         jQuery("#scnd_chk").click(function(){
+            if(jQuery("#scnd_chk").attr("class")=="prof_sel_false sel_style"){
+                jQuery("#scnd_chk").attr("class","prof_sel_true sel_style");
+                jQuery(".email_cbox").attr('checked',true);
+            }else{
+                jQuery("#scnd_chk").attr("class","prof_sel_false sel_style");
+                jQuery(".email_cbox").attr('checked',false);
+            }
+         });
+         
+         /** Success and Failure Message Display **/
+         if(eval('{!updateSuccess}')){
+            jQuery('.info_msgs_almp_err').css('visibility','hidden');
+            jQuery('#almp_prf_info').attr('class','info_msgs_almp');
+         }else{
+            jQuery('.info_msgs_almp').css('visibility','hidden');
+            jQuery('#almp_prf_info').attr('class','info_msgs_almp_err');
+         }
+    };
+    
+   /*  function selectSlsOrg(idVal){
+         var fld = document.getElementById('{!$Component.theForm.selOrgCdId}');
+         fld.value = idVal;
+         } */
+
+  var showActionAlertDetails =function()
+  {
+      if(jQuery(this).attr('id')=='opt_enable'){
+            jQuery("#opt_enable").attr('class','opt_style prof_opt_true');
+            jQuery("#opt_disable").attr('class','opt_style prof_opt_false');
+            jQuery("#action_alert_detail").css('display','block');
+            jQuery("#pref_alerts").children().attr('class','prof_sprt');
+            jQuery(".aalert_cbox").attr('checked',true);
+      }else{
+            jQuery("#opt_disable").attr('class','opt_style prof_opt_true');
+            jQuery("#opt_enable").attr('class','opt_style prof_opt_false');
+            jQuery("#action_alert_detail").css('display','none');
+            jQuery("#pref_alerts").children().attr('class','none');
+            jQuery(".aalert_cbox").attr('checked',false);
+      }
+  };
+  function showHideTabs(clickedEl,tabId,boolVal){
+    var parentEl = jQuery(clickedEl);
+    jQuery(parentEl).parent().each(
+        function(index){
+            jQuery(this).attr('class','selected');
+            jQuery(this).siblings().attr('class','');
+        }
+    );
+    jQuery("#"+tabId).css('display','block');
+    jQuery("#"+tabId).siblings().css('display','none');
+    if(boolVal=='true'){
+        jQuery("#opt_enable").attr('class','opt_style prof_opt_true');
+        jQuery("#opt_disable").attr('class','opt_style prof_opt_false');
+        jQuery("#action_alert_detail").css('display','block');
+        jQuery("#pref_alerts").children().attr('class','prof_sprt');
+    }else{
+        jQuery("#opt_disable").attr('class','opt_style prof_opt_true');
+        jQuery("#opt_enable").attr('class','opt_style prof_opt_false');
+        jQuery("#action_alert_detail").css('display','none');
+        jQuery("#pref_alerts").children().attr('class','none');
+    }   
+        
+        if(tabId=='pref_lang'){
+            jQuery('#lead_curr_sts').css('display','block');
+           }else{
+            jQuery('#lead_curr_sts').css('display','none');
+           }
+   }
+  /*  var fixCellPadding = function (){
+         jQuery("#page_LeadTnC").click(showLeadTnC);
+    };
+    
+    var showLeadTnC = function(){
+            //var pgId='{!$CurrentPage.parameters.pgId}';
+            //if(pgId!=null & pgId.length>0){
+                var topPos = (jQuery(window).height()/2)-(jQuery('#lead_tnc_container').height()/2);
+                var leftPos = (jQuery(window).width()/2)-(jQuery('#lead_tnc_container').width()/2);
+                if(jQuery("#email_sel_mask").attr('class')=='email_overlay_closed'){
+                    jQuery("#email_sel_mask").attr('class','email_overlay_open');
+                   // setHeight();
+                    jQuery('#lead_tnc_content').load('{!URLFOR($Page.AnswersHome)}?type=Opt-In+Terms');
+                    jQuery('#lead_tnc_container').css('top',topPos);
+                    jQuery('#lead_tnc_container').css('left',leftPos);
+                    jQuery('#lead_tnc_container').css('visibility','visible');
+                }else{
+                    jQuery("#email_sel_mask").attr('class','email_overlay_closed');
+                    jQuery('#lead_tnc_container').css('visibility','hidden');
+                }
+            //}           
+            
+          } */
+     
+     //for tooltip
+   jQuery(document).ready(function() {
+   jQuery('.frm_cntr').tooltipster({
+   animation: 'fade',
+   arrow: true,
+   arrowColor: '',
+   content: '{!$Label.ProfileErrortooltip}',
+   delay: 200,
+   fixedWidth: 0,
+   maxWidth: 0,
+   functionBefore: function(origin, continueTooltip) {
+      continueTooltip();
+   },
+   functionReady: function(origin, tooltip) {},
+   functionAfter: function(origin) {},
+   icon: '(?)',
+   iconDesktop: false,
+   iconTouch: false,
+   iconTheme: '.tooltipster-icon',
+   interactive: true,
+   interactiveTolerance: 350,
+   offsetX: 210,
+   offsetY: -15,
+   onlyOne: true,
+   position: 'top-left',
+   speed: 350,
+   timer: 0,
+   theme: '.my-custom-theme',
+   touchDevices: true,
+   trigger: 'custom',
+   updateAnimation: true});
+   showtooltip(false);
+        });
+    
+    function showtooltip(toshow)
+    {
+    
+     jQuery('.myselect').each(function(i)
+      {
+      if(i==2 && (this.value=='' || !toshow))
+      {//console.log(this.value);
+      if(toshow)
+      {jQuery('.frm_cntr').eq(2).tooltipster('show');
+      jQuery('.frm_cntr').eq(2).find('.select_cust').css('border','1px solid red');
+      jQuery('.prof_act_alrt_hdr3').css('color','#e00b0b');
+      jQuery('.prof_act_alrt_hdr3').text('*'+'{!$Label.Frequency}');
+      }
+      else
+      jQuery('.frm_cntr').eq(2).click(function(){jQuery(this).tooltipster('hide');
+      jQuery(this).find('.select_cust').css('border','');
+      jQuery('.prof_act_alrt_hdr3').css('color','');
+      jQuery('.prof_act_alrt_hdr3').text('{!$Label.Frequency}');});
+      return null;
+      }
+      else if(i==2) submitaction();
+      });
+    
+    
+    }     
+    </script>
+    
+    <apex:inputHidden id="selOrgCdId" value="{!selOrgCdId}"/>
+    <apex:inputHidden id="inclSendEmail" value="{!inclSendEmail}"/>
+    <apex:inputCheckbox styleClass="aalert_cbox" style="display:none;" value="{!aAlertEnabled}"/>
+    <apex:inputCheckbox styleClass="email_cbox" style="display:none;" value="{!inclSendEmail}"/>
+    <!--content area-->
+    <!--Column area starts-->
+      <h1 class="big_pnk_hdr">{!$Label.Update_My_Profile}</h1>
+      <div class="cntr mar_tp_10">
+       <apex:outputPanel layout="none" rendered="{!OR(IsError,actionAlertError,bDuplicate,updateSuccess,isLeadOptinError)}" id="update_error_2">
+        <div id="almp_prf_info">             
+        <apex:outputText value="{!$Label.Update_Confirmation_Msg}" styleClass="prf_success_msg" rendered="{!updateSuccess}"/>
+        <apex:outputText value="{!$Label.Update_Pref_Err_1} {!$Label.Update_Pref_Err_2}" styleClass="prf_failure_msg" rendered="{!IsError}"/> 
+        <apex:outputText value="{!$Label.Action_Alert_Error}" styleClass="prf_failure_msg" rendered="{!actionAlertError}"/>
+        <apex:outputText value="{!$Label.DuplicateActionAlertError}" styleClass="prf_failure_msg" rendered="{!bDuplicate}"/>
+        <apex:outputText value="{!$Label.Lead_Opt_in_Error}" styleClass="prf_failure_msg" rendered="{!isLeadOptinError}"/>
+        </div>
+    </apex:outputPanel>
+      <!-- Setting Tab Starts -->
+                    <div class="tabs_cnt_prof">
+                        <ul class="tabs_btm_shdw">
+                            <li class="selected"><a href="#" id="tab_settings" onClick="showHideTabs(this,'pref_lang','{!aAlertEnabled}');">{!$Label.Settings}</a><span></span></li>
+                            <li><apex:outputLink value="#" id="tab_action_alerts" onClick="showHideTabs(this,'pref_alerts','{!aAlertEnabled}');" rendered="{!AND(market.Action_Alert_Enabled__c,userProfile='Avon Leader')}">{!$Label.Mobile_Action_Alert}</apex:outputLink><span></span></li> <!-- {!AND(market.Action_Alert_Enabled__c,userProfile='Avon Leader')} -->
+                        </ul>
+                        <div id="usr_pref_tabs">
+                        <div class="fltr_srch_prof_left" id="pref_lang">
+                            <label class="prof_act_lbl mar_tp_10">{!$Label.Language}</label>
+                            <div class="frm_cntr left">
+                                <apex:inputField styleClass="myselect" value="{!userRec.LanguageLocaleKey}"/>
+                            </div>
+                        </div>
+                    
+       <!-- Setting Tab ends -->
+      
+       <!-- Action Alert starts -->
+                    <apex:outputPanel layout="none" rendered="{!AND(market.Action_Alert_Enabled__c,userProfile='Avon Leader')}">
+                        <div class="prof_act" id="pref_alerts">
+                            <div class="prof_sprt">
+                            <p class="prof_act_pnk_text">{!$Label.Action_Alert_Info_Msg}</p>
+                            <div class="prof_act_alrt1"><span class="prof_act_alrt_hdr1  left">{!$Label.Mobile_Action_Alert}</span>
+                            <div class="prof_act_alrt_text left" id="alert_cbox">
+                            <a href="#" class="opt_style" id="opt_enable"><span style="margin:0px;padding:0 30px;">{!$Label.Enabled}</span></a>
+                            <a href="#" class="opt_style" id="opt_disable"><span style="margin:0px;padding:0 30px;">{!$Label.Disabled}</span></a></div>
+                            </div>
+                            </div>
+                            <div id="action_alert_detail">
+                            <div class="prof_sprt" id="mailPlanActionAlrt">
+                            <div class="prof_act_alrt1">
+                            <span class="prof_act_alrt_hdr3 left">{!$Label.Action_Alert_View}</span>
+                            <div class="prof_act_alrt_text left">
+                            <div class="frm_cntr">
+                            <apex:selectList styleClass="myselect" title="{!IF(userRec.Action_Alert_View__c!=null,userRec.Action_Alert_View__c,'Select Action Alert View')}" value="{!userRec.Action_Alert_View__c}"  multiSelect="false" size="1">
+                                  <apex:selectOptions value="{!AllowedActionAlertsView}"/>
+                            </apex:selectList>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+                            <div class="prof_sprt">
+                            <div class="prof_act_alrt1"><span class="prof_act_alrt_hdr2 left">{!$Label.Action_Alert_Sent_To}</span>
+                            <div class="prof_act_alrt_text left">
+                            <a href="{!IF(userRec.GI3_EMAIL__c!=null,'mailto:'+userRec.GI3_EMAIL__c,'#')}" style="background:none transparent scroll repeat 0% 0%;" class="prof_sel_true sel_style"><span>{!userRec.GI3_EMAIL__c}</span></a><br/><br/><br/>
+                            <a href="#" id="scnd_chk"><span style="padding-left:15px;"></span></a>
+                            <div id="scnd_email"><apex:inputText id="iputtxt" style="margin-top:-20px;position:absolute;" value="{!smsAdrs}" styleClass="prof_sel_text"/></div>
+                            </div>
+                            </div>
+                        </div>
+                            <div class="prof_sprt">
+                            <div class="prof_act_alrt1"><span class="prof_act_alrt_hdr3 left" style="padding-top: 11px;">{!$Label.Frequency}</span>
+                            <div class="prof_act_alrt_text left">
+                            <div class="frm_cntr" title="{!$Label.ProfileErrortooltip}">
+                            <apex:selectList styleClass="myselect" title="{!IF(userRec.Action_Alert_Frequency__c!=null,userRec.Action_Alert_Frequency__c,$Label.Select_Frequency)}" value="{!userRec.Action_Alert_Frequency__c}" multiSelect="false" size="1">
+                               <apex:selectOptions value="{!AllowedFrequencies}"/>
+                            </apex:selectList>
+                            </div>
+                            <p class="prof_frq_pnk_text">{!$Label.Action_Alert_Description_1}</p>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="prof_act_alrt1">
+                            <span class="prof_act_alrt_hdr4 left">
+                                <apex:outputText value="{!$Label.Action_Alert_Description_2}" escape="false"/>
+                            </span>
+                            <div class="prof_act_alrt_text left">
+                            <div class="frm_cntr">
+                            <apex:selectList styleClass="myselect" title="{!IF(userRec.Action_Alert_1__c!=null,userRec.Action_Alert_1__c,$Label.Select_Alert)}" value="{!userRec.Action_Alert_1__c}" multiSelect="false" size="1">
+                                <apex:selectOptions value="{!AllowedActionAlerts}" />
+                            </apex:selectList>
+                            </div>
+                            <div class="frm_cntr">
+                            <apex:selectList styleClass="myselect" title="{!IF(userRec.Action_Alert_2__c!=null,userRec.Action_Alert_2__c,$Label.Select_Alert)}" value="{!userRec.Action_Alert_2__c}" multiSelect="false" size="1">
+                               <apex:selectOptions value="{!AllowedActionAlerts}" />
+                            </apex:selectList>
+                            </div>
+                            <div class="frm_cntr">
+                            <apex:selectList styleClass="myselect" title="{!IF(userRec.Action_Alert_3__c!=null,userRec.Action_Alert_3__c,$Label.Select_Alert)}" value="{!userRec.Action_Alert_3__c}" multiSelect="false" size="1">
+                              <apex:selectOptions value="{!AllowedActionAlerts}"/>
+                            </apex:selectList>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+                    </div>
+                    </apex:outputPanel>
+                    </div>
+       <!-- Action Alert ends -->
+       <p class="cntr"><apex:outputPanel id="submitBtnNew" style="cursor:pointer" styleClass="srch_cta" title="{!$Label.Go}" onClick="showtooltip(true);">{!$Label.Update_Profile}</apex:outputPanel></p>
+      </div>
+      </div>
+    <!--Column area ends--> 
+
+  <!--content area ends--> 
+                <!-- table border="0" width="100%">
+                    
+                    <tr style="height:40px;">
+                    <td align="left">
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        <table width="100%" border="0">
+                            <tr>
+                                <td>
+                                <div id="usr_pref_tabs">
+                                <div id="pref_lang" class="perf_block_current">
+                                <table border="0" width="100%" id="usr_preferences">
+                                    <tbody>
+                                        <apex:outputPanel layout="none" rendered="{!AND(market.Is_ALMPLUS_Enabled__c,userProfile='Avon Leader')}">
+                                            <tr class="prf_menu_back">
+                                                <td class="kpi_cell_right" valign="top">{!$Label.Out_Of_Office_Message}</td>
+                                                <td class="lead_optn_nopad" style="font-weight:normal">
+                                                <div id="oooMsg">
+                                                <apex:selectRadio value="{!userRec.Out_of_Office__c}" style="border:0;outline:none;" id="oooButtons" >
+                                                    <apex:selectOptions value="{!OOOMsg}" id="oooButton"/>
+                                                </apex:selectRadio>
+                                                </div>
+                                                </td>
+                                            </tr>
+                                            <apex:outputPanel layout="none" rendered="{!userProfile=='Avon Leader'}">
+                                             <tr class="prf_menu_back">
+                                                <td class="kpi_cell_right" valign="top"><apex:outputText value="{!$Label.Leads_Opt_In}"/></td>
+                                                <td class="lead_optn_nopad" style="font-weight:normal">
+                                                <table>
+                                                <tr>
+                                                <td>
+                                                <apex:selectRadio value="{!userRec.Opt_In__c}" style="border:0;outline:none;" id="optInButtons">
+                                                    <apex:selectOptions value="{!OIMsg}" />
+                                                </apex:selectRadio>
+                                                </td><td>
+                                                <div style="padding-left:25px;" >
+                                                <apex:inputField value="{!userRec.Lead_Opt_in_Terms__c}" />
+                                                <apex:outputText value="{!$Label.Lead_Optin_Agree}"/>&nbsp;
+                                                <a href="#" id="page_LeadTnC" style="color:blue;border-bottom:1px solid;">
+                                                <apex:outputText value="{!$Label.Lead_Optin_TnE}"/></a>
+                                                </div>
+                                                </td></tr></table>
+                                                </td>
+                                            </tr>
+                                            </apex:outputPanel>
+                                        </apex:outputPanel>
+                                    </tbody>
+                                </table>
+                                </div> 
+                                <apex:outputPanel layout="none"
+                                    rendered="{!AND(market.Action_Alert_Enabled__c,userProfile='Avon Leader')}">
+                                    <div id="pref_alerts" class="perf_block">
+                                    <div id="action_alert_detail"
+                                        style="display: none; width: 100%;">
+                                    <table border="0" width="100%">
+                                        <tbody>
+                                            <tr class="kpi_row_odd">
+                                                <td class="kpi_cell_left" width="150">{!$Label.Action_Alert_Sent_To}</td>
+                                                <td class="kpi_cell_left"><apex:outputField value="{!userRec.GI3_EMAIL__c}" />
+                                                &nbsp;<apex:commandLink styleClass="kpi_cell_left_nopad" value="" title="{!$Label.Test_SMS_Message}"  
+                                                    action="{!sendTestActionAlert}">
+                                                    <apex:image value="{!URLFOR($Resource.ALM_Assetsv2,'images/email.png')}"
+                                                        alt="{!$Label.Test_SMS_Message}" />
+                                                </apex:commandLink></td>
+
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                    </div>
+                                </apex:outputPanel>
+                                </div>
+                                
+                                 <apex:outputPanel layout="none"
+                                    rendered="{!AND(market.Is_ALMPLUS_Enabled__c,userProfile='Avon Leader')}">
+                                    <div id="lead_curr_sts">
+                                    <table border="0" width="100%">
+                                        <tbody>
+                                        <tr>
+                                            <td class="prf_menu_hdr" style="padding-top:7px"><apex:outputText value="{!$Label.Leads_Eligibility}"/></td>
+                                        </tr>
+                                            <tr class="prf_menu_back perf_block_current">
+                                                <td class="kpi_cell_left" valign="middle" width="100%">
+                                                <apex:outputText value="{!$Label.Leader_Eligible_Success}" rendered="{!userRec.Is_Eligible__c}"/>
+                                                <apex:outputPanel layout="none" rendered="{!NOT(userRec.Is_Eligible__c)}">
+                                                <apex:outputText style="color:#f5402b;padding-left:0px;" value="{!$Label.Leader_Not_Eligible}"/>
+                                                <ul style="font-weight:normal;padding-top:-5px;">
+                                                <apex:repeat value="{!inelgResn}" var="row">
+                                                    <li>{!row}</li>
+                                                </apex:repeat>  
+                                                </ul>
+                                                </apex:outputPanel>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                </apex:outputPanel>
+                                </td>
+                            </tr>
+                        </table>
+                        </td>
+                    </tr>
+                </table-->
+             
+        </apex:define>
+        <apex:define name="contentHidden">
+        <!-- SA: omniture tracking for the successful update of the profile 
+        <apex:outputPanel rendered="{!updateSuccess}">
+            <script>                                
+                var hasOOOChanged = {!hasOOOChanged};
+                var hasOptInChanged = {!hasOptInChanged};
+                var oooButtonYes = document.getElementById("{!$Component.theForm.oooButtons}:0"); 
+                var oooButtonNo = document.getElementById("{!$Component.theForm.oooButtons}:1");
+                var optInButtonYes = document.getElementById("{!$Component.theForm.optInButtons}:0");                                               
+                var optInbuttonNo = document.getElementById("{!$Component.theForm.optInButtons}:1");
+                var submitButton = document.getElementById("{!$Component.theForm.submitBtn}");
+                /*
+                alert('oooButtonYes.value: ' + oooButtonYes.value);
+                alert('oooButtonNo.value: ' + oooButtonNo.value);
+                alert('optInButtonYes.value: ' + optInButtonYes.value);
+                alert('optInbuttonNo.value: ' + optInbuttonNo.value);
+                alert('submitButton: ' + submitButton);
+                */
+                var s=s_gi('{!market.Omniture_Suite_Name__c}');
+                if(hasOOOChanged == true){ //ooo change tracking
+                    //alert('hasOOOChanged: ' + {!hasOOOChanged});
+                    s.linkTrackVars='events';
+                    s.linkTrackEvents='event64';
+                    s.events='event64';
+                    s.tl(oooButtonYes,'o', 'Profile: Editing Out of Office Message');
+                }
+                if(hasOptInChanged == true){ //opt in change tracking
+                    //alert('hasOptInChanged: ' + {!hasOptInChanged});
+                    s.linkTrackVars='events';
+                    s.linkTrackEvents='event65';
+                    s.events='event65';
+                    s.tl(optInButtonYes,'o', 'Profile: Opt-In to Enroll in Leads');
+                }
+                //submit button press tracking
+                s.linkTrackVars='events';
+                s.linkTrackEvents='event66';
+                s.events='event66';
+                s.tl(submitButton,'o', 'Profile: Successful Profile Updates');                      
+                
+            </script>
+        </apex:outputPanel>    -->  
+        <div id="lead_tnc_container">
+                <div id="lead_tnc_close" class="overlay_close">
+                <table width="100%" border="0">
+                <tr>
+                <td align="right" class="lead_tnc_hdr">
+                <a class="dlg_close" href="#" style="color:#a2a2a2;" onClick="showLeadTnC();">{!$Label.Close_this_Page}</a>
+                </td>
+                </tr>
+                </table>
+                </div>
+                <div id="lead_tnc_content">
+                <!-- iframe id="myFrame" width="100%" height="100%" scrolling="auto" frameborder="0" src="/apex/ShowMarketDocument?type=Opt-In+Terms"/ -->
+                </div>
+                </div>
+        <apex:actionFunction name="submitaction" action="{!updatePreferences}"/>       
+        <!-- View RepDetail Integrations Starts -->
+                <apex:actionFunction name="viewRepDetail" action="{!callRepDetails}" rerender="repDetail" oncomplete="javascript:displayit();" status="coachCounterStatus">
+                    <apex:param name="repDetailAcctNbr" assignTo="{!repDetailAcctNbr}" value="{!repDetailAcctNbr}"/>
+                </apex:actionFunction>
+            <apex:actionStatus id="coachCounterStatus"  onstart="showProcessingMsg();" onstop="showProcessingMsg();"/>
+                   <div id="email_sel_mask2" class="white_trans_closed">
+                     <apex:outputPanel id="repDetail" layout="none">
+                        <c:CoachingRecord repacctnbr="{!repDetailAcctNbr}" rendered="{!repDetailAcctNbr!=null}"/>
+                       </apex:outputPanel>
+                   </div>
+            <!-- View RepDetail Integrations Ends --> 
+        </apex:define>
+</apex:composition>
+</apex:form>
+ <c:OmnitureWebTrack mktName="{!market.Omniture_Suite_Name__c}" 
+                        mktAcctKey="{!userRec.MRKT_ID_ACCT_NR_KEY__c}"
+                        userType="{!userRec.Profile.Name}"
+                        userTitle="{!userRec.LDRSHP_TITL_LVL_NBR__c}"        
+                        rendered="{!globalConfig.Omniture_Tracking_Enabled__c}"/>          
+</apex:page>
